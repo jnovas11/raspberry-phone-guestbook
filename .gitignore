@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+recordings/*
+!recordings/.gitkeep
+sounds/*.wav
+!sounds/beep.wav
+!sounds/menu.wav
