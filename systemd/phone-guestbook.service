@@ -1,0 +1,15 @@
+[Unit]
+Description=Raspberry Pi Phone Guestbook
+After=sound.target local-fs.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/opt/phone-guestbook
+ExecStart=/opt/phone-guestbook/.venv/bin/phone-guestbook --config /opt/phone-guestbook/config.ini
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+

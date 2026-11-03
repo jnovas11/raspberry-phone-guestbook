@@ -1,0 +1,209 @@
+GUIA D'ARRANCADA — RASPBERRY PHONE GUESTBOOK
+==============================================
+
+ACTUALITZACIÓ: SET CATEGORIES
+Després de prémer r (gravar) o p (escoltar), selecciona la categoria:
+1 Família, 2 Amics, 3 Viatges, 4 Infància, 5 Somnis, 6 Consells, 7 Anècdotes.
+Prem Enter després de cada tecla. La gravació comença DESPRÉS d'escollir
+la categoria i d'escoltar el bip. Torna a prémer r per acabar.
+La reproducció selecciona només notes de la categoria triada.
+Després de cada acció es torna al menú inicial i cal triar categoria de nou.
+En penjar es cancel·la també qualsevol selecció de categoria pendent.
+Les notes es desen a recordings/<categoria>/.
+Els noms i GPIO de categoria es poden canviar a config.ini.
+Exemple: h → esperar menú → r → 1 → esperar bip → r per acabar.
+Exemple d'escolta: p → 1 → p per aturar, o esperar que acabi.
+Les explicacions següents dels botons incorporen aquest pas intermedi.
+
+1. PROVAR EL PROGRAMA A WINDOWS
+--------------------------------
+
+Obre PowerShell i entra a la carpeta del projecte:
+
+cd "C:\projectes\raspberry-phone-guestbook"
+
+La primera vegada, prepara l'entorn virtual i instal·la el projecte:
+
+python -m venv .venv
+.venv\Scripts\python -m pip install -e .
+
+Si Windows no reconeix l'ordre "python", utilitza aquesta:
+
+py -m venv .venv
+
+Per iniciar el simulador:
+
+.venv\Scripts\phone-guestbook --config config.ini --simulate
+
+Quan aparegui aquest missatge, el programa està funcionant:
+
+Sistema preparat. Esperant que es despengi l'auricular.
+Simulador: h=penjar/despenjar, r=gravar, p=reproduir, q=sortir
+
+
+2. QUÈ FA CADA TECLA DEL SIMULADOR
+-----------------------------------
+
+h + Enter
+    Simula que es penja o es despenja l'auricular.
+
+    Si estava penjat, el despenja i reprodueix menu.wav.
+    Si estava despenjat, el penja i atura l'acció actual.
+
+r + Enter
+    Simula el botó de gravació.
+
+    Primera pulsació:
+    - Reprodueix record_start.wav.
+    - Reprodueix el bip.
+    - Comença una gravació simulada.
+
+    Segona pulsació:
+    - Atura la gravació.
+    - Desa el fitxer WAV a la carpeta recordings.
+    - Reprodueix record_saved.wav.
+    - Torna a reproduir el menú.
+
+p + Enter
+    Simula el botó de reproducció.
+
+    Primera pulsació:
+    - Busca una nota de veu aleatòria a recordings.
+    - La reprodueix.
+
+    Segona pulsació:
+    - Atura la reproducció actual.
+    - Torna al menú.
+
+    Si no hi ha cap gravació vàlida, intenta reproduir
+    no_recordings.wav.
+
+q + Enter
+    Tanca el simulador.
+
+Ctrl+C
+    També permet tancar el programa.
+
+
+3. PROVA COMPLETA RECOMANADA
+-----------------------------
+
+1. Executa el simulador.
+2. Escriu h i prem Enter per despenjar.
+3. S'ha d'escoltar el menú de veu.
+4. Escriu r i prem Enter per començar a gravar.
+5. Espera almenys dos segons.
+6. Torna a escriure r i prem Enter per acabar i desar.
+7. Escriu p i prem Enter per reproduir la nota desada.
+8. Escriu h i prem Enter per penjar.
+9. Escriu q i prem Enter per tancar el programa.
+
+En mode simulació, les gravacions creades són silencioses. El simulador
+comprova el funcionament del programa, però no utilitza el micròfon de
+l'ordinador.
+
+
+4. QUÈ PASSA EN PENJAR L'AURICULAR
+-----------------------------------
+
+Si es penja mentre s'està gravant:
+    La gravació s'atura i es desa, sempre que sigui vàlida i duri més
+    del mínim configurat.
+
+Si es penja mentre s'està reproduint una nota:
+    La reproducció s'atura immediatament.
+
+Després de penjar:
+    El programa queda esperant fins que es torni a despenjar.
+
+
+5. FITXERS D'ÀUDIO DEL SISTEMA
+-------------------------------
+
+Els sons del sistema es troben a la carpeta sounds:
+
+menu.wav
+    Explica que es pot gravar o reproduir una nota.
+
+record_start.wav
+    Indica que es pot començar a parlar després del bip.
+
+beep.wav
+    Senyal d'inici de la gravació.
+
+record_saved.wav
+    Confirma que la nota s'ha desat.
+
+record_too_short.wav
+    Indica que la gravació era massa curta.
+
+no_recordings.wav
+    Indica que encara no hi ha notes enregistrades.
+
+Si falta una locució, el programa continua funcionant, però no se sentirà
+aquell missatge.
+
+
+6. CONFIGURACIÓ PRINCIPAL
+--------------------------
+
+El fitxer config.ini permet canviar:
+
+- Els pins GPIO.
+- El dispositiu d'entrada i sortida d'àudio.
+- La durada màxima de gravació.
+- La durada mínima d'una nota vàlida.
+- Les carpetes de sons i gravacions.
+
+Configuració GPIO inicial:
+
+GPIO 22: interruptor de l'auricular.
+GPIO 23: botó de gravació.
+GPIO 24: botó de reproducció.
+
+La durada màxima inicial d'una gravació és de 600 segons, és a dir,
+10 minuts.
+
+
+7. ARRANCAR-LO A LA RASPBERRY PI
+---------------------------------
+
+Quan el projecte estigui instal·lat a /opt/phone-guestbook, es podrà
+provar manualment amb:
+
+cd /opt/phone-guestbook
+.venv/bin/phone-guestbook --config config.ini
+
+Per iniciar el servei automàtic:
+
+sudo systemctl start phone-guestbook.service
+
+Per aturar-lo:
+
+sudo systemctl stop phone-guestbook.service
+
+Per consultar si està funcionant:
+
+systemctl status phone-guestbook.service
+
+Per veure els missatges del programa en directe:
+
+journalctl -u phone-guestbook.service -f
+
+Si el servei està habilitat, el programa arrencarà automàticament quan
+s'encengui la Raspberry Pi.
+
+
+8. ON ES DESEN LES NOTES
+-------------------------
+
+Les notes queden a:
+
+recordings
+
+Els noms contenen la data i l'hora, per exemple:
+
+20261007-183527-123456.wav
+
+No s'utilitza cap base de dades.
+
